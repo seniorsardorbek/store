@@ -5,25 +5,39 @@ import User from '../schemas/Users.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import config from '../utils/config/config.js';
-import {validator} from "../utils/validator.js"
-import {UserLoginSchema, UserPatchSchema, UserPostSchema} from "../validators/Users.js"
-import {isLoggedIn} from "../auth/IsloggedIn.js"
+import { validator } from "../utils/validator.js"
+import { UserLoginSchema, UserPatchSchema, UserPostSchema } from "../validators/Users.js"
+import { isLoggedIn } from "../auth/IsloggedIn.js"
+import {hasRole} from "../auth/hasRole.js"
 const router = express.Router();
 
 
 
-router.get('/users', isLoggedIn  , async (req, res) => {
+router.get('/users', isLoggedIn, async (req, res ) => {
+    try {
+        
 
+        hasRole(req , res  , ['admin' ])
 
+        let { limit = 10, skip = 0, q, by = 'created_at', order = 'asc' } = req.query || {}
+        let filter = {}
 
-    const users = await User.find();
-    if (req.user.role === 'user') {
-        return res.status(403).send({ msg: 'Forbidden: Only admin can access this route' });
+        if (q) {
+            filter = { username: { $regex: new RegExp(q, 'i') } }
+        }
+
+        limit = +limit
+        skip = +skip
+
+        const total = await User.countDocuments(filter);
+        const data = await User.find(filter).sort({ [by]: order }).limit(limit).skip(limit * skip)
+        res.json({ total, data, limit, skip });
+    } catch (error) {
+        res.status(500).send('Error: ' + error.message);
     }
-    res.json(users);
 });
 
-router.get('/users/:userId',  isLoggedIn , async (req, res) => {
+router.get('/users/:userId', isLoggedIn, async (req, res) => {
     try {
         const { userId } = req.params || {};
 
@@ -36,7 +50,7 @@ router.get('/users/:userId',  isLoggedIn , async (req, res) => {
 
 
 
-router.post('/register' ,  validator(UserPostSchema) , async (req, res) => {
+router.post('/register', validator(UserPostSchema), async (req, res) => {
     try {
         req.body.password = await bcrypt.hash(req.body.password, 12);
         const user = new User(req.body);
@@ -55,43 +69,55 @@ router.post('/register' ,  validator(UserPostSchema) , async (req, res) => {
 });
 
 
-router.post('/login', validator(UserLoginSchema) , async (req, res) => {
+router.post('/login', validator(UserLoginSchema), async (req, res) => {
     try {
+        console.log(req.body);
         const { username, password } = req.body || {};
         const user = await User.findOne({ username: username });
+        console.log(user);
+
+        if (!user) {
+            return res.status(401).send({ msg: 'Invalid username or password' });
+        }
         const decode = await bcrypt.compare(password, user.password);
         console.log(decode);
+
         if (!user || !decode) {
+
             return res.status(401).send({ msg: 'Invalid username or password' });
         }
         const token = jwt.sign({ id: user.id, role: user.role }, config.jwt.secret, {
+
             expiresIn: config.jwt.expiresIn,
         });
 
         res.json({ data: user, token });
     } catch (error) {
+        console.log(error);
         res.status(500).send('Error: ' + error.message);
     }
 });
 
 
 
-router.patch('/users/:id', isLoggedIn ,  validator(UserPatchSchema) ,  async (req, res) => {
+router.patch('/users/:id', isLoggedIn, validator(UserPatchSchema), async (req, res) => {
     try {
+
         const { id } = req.params;
         console.log(id);
         const updated = await User.findByIdAndUpdate(id, { ...req.body });
         res.status(201).json('Updated');
     } catch (error) {
+        console.log(error);
         res.status(500).send('Error: ' + error.message);
     }
 });
 
 
 
-router.delete('/users/:id',  isLoggedIn , async (req, res) => {
+router.delete('/users/:id', isLoggedIn, async (req, res) => {
     try {
-        const { id } = req.params|| {}; 
+        const { id } = req.params || {};
 
     } catch (error) {
         res.status(500).send('Error: ' + error.message);
