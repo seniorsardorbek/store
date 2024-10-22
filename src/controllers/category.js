@@ -1,15 +1,26 @@
 /** @format */
 
 import Category from '../schemas/Category.js';
-export async function createCategory(req, res, xt) {
+export async function getAllCategory(req, res,) {
     try {
+       
+        let { limit = 100, skip = 0, q, by = 'created_at', order = 'asc' } = req.query || {}
+        let filter = {}
 
-        console.log("hello");
-        const category =  Category.find()
-        const data  =  await category.populate('products' , "name  -_id price -categoryId");
-        
+        if (q) {
+            filter = { title: { $regex: new RegExp(q, 'i') } }
+        }
 
-        res.status(200).send({ data });
+        limit = +limit
+        skip = +skip
+
+        const total = await Category.countDocuments(filter);
+         const data  = await Category.find(filter).select('-created_at -updated_at ' ).populate('products' , "name price -categoryId -_id").sort({ [by] : order }).limit(limit).skip(limit * skip)
+
+
+
+
+        res.status(200).send({ data  , total , limit , skip });
     } catch (error) {
         res.status(500).send('Error: ' + error.message);
     }

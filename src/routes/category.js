@@ -2,15 +2,15 @@
 
 import express from 'express';
 import {
-    createCategory,
     deleteCategory,
+    getAllCategory,
     postCategory,
     updateCategory,
 } from '../controllers/category.js';
 
 const router = express.Router();
 
-router.get('/category', createCategory);
+router.get('/category', getAllCategory);
 
 router.post('/category', postCategory);
 
