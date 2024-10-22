@@ -11,11 +11,13 @@ const app = express()
 
 app.use(express.static('uploads'))
 app.use(express.json());
+
 app.use(usersRouter)
 app.use(categoryRouter)
 app.use(productRouter)
 
 db()
+
 app.listen(config.port , () => {
   console.log(`Server is running ${config.port}`);
 });
