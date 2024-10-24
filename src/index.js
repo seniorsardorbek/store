@@ -3,6 +3,7 @@ import express from 'express'
 import usersRouter  from "./routes/users.js"
 import categoryRouter  from "./routes/category.js"
 import productRouter  from "./routes/product.js"
+import commentRouter  from "./routes/comment.js"
 import {db} from "./db/index.js"
 import config from  "./utils/config/config.js"
 
@@ -15,7 +16,7 @@ app.use(express.json());
 app.use(usersRouter)
 app.use(categoryRouter)
 app.use(productRouter)
-
+app.use(commentRouter)
 db()
 
 app.listen(config.port , () => {
