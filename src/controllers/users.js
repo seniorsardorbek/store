@@ -22,6 +22,7 @@ export async function getAllUsers(req, res) {
 
         res.json({ total, data, limit, skip });
     } catch (error) {
+        console.log(error);
         res.status(500).send('Error: ' + error.message);
     }
 }

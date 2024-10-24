@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken"
 
 export const  isLoggedIn = async (req, res, next) => {
     try {
-        console.log(req.headers.authorization);
+        console.log(req);
         const token = req.headers?.authorization?.split(' ')[1];
         const decode = jwt.decode(token);
         if(!decode){
