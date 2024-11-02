@@ -1,5 +1,7 @@
 import Joi from "joi"
 
+// joi validator
+
 
 export const UserPostSchema = Joi.object({
     fullname: Joi.string().required(),
