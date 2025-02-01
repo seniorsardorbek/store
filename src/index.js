@@ -2,6 +2,7 @@
 import express from 'express'
 import usersRouter  from "./routes/users.js"
 import categoryRouter  from "./routes/category.js"
+import orders  from "./routes/orders.js"
 import productRouter  from "./routes/product.js"
 import commentRouter  from "./routes/comment.js"
 import {db} from "./db/index.js"
@@ -40,6 +41,7 @@ app.use(express.json());
 
 app.use(usersRouter)
 app.use(categoryRouter)
+app.use(orders)
 app.use(productRouter)
 app.use(commentRouter)
 db()

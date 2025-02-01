@@ -8,7 +8,7 @@ router.get('/comments/:productId', async (req, res) => {
     try {
         const { productId } = req.params || {}
         console.log(productId);
-        const data = await Comment.find({  productId})
+        const data = await Comment.find({  productId}).populate('userId')
         res.status(200).json(data)
     } catch (error) {
         res.status(404).send(error.message);
